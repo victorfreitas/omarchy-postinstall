@@ -14,3 +14,11 @@ service_enable() {
   log_info "Enabling service: $1"
   as_root systemctl enable --now "$1"
 }
+
+# Installs AUR packages, skipping ones already installed. yay runs as the
+# regular user and escalates on its own when it reaches pacman, so it must
+# never be wrapped in as_root.
+aur_install() {
+  log_info "Installing from AUR: $*"
+  yay -S --needed --noconfirm "$@"
+}
