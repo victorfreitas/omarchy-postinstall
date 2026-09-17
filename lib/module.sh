@@ -72,7 +72,13 @@ module_run() {
       exit 0
     fi
 
-    module_apply
+    # module_run is called as `module_run ... || ...`, and bash suppresses
+    # errexit inside a subshell used as an operand of ||. The status is
+    # therefore tested explicitly rather than left to `set -e`.
+    if ! module_apply; then
+      log_error "Failed"
+      exit 1
+    fi
     log_ok "Done"
   )
 }

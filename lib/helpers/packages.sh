@@ -20,5 +20,20 @@ service_enable() {
 # never be wrapped in as_root.
 aur_install() {
   log_info "Installing from AUR: $*"
-  yay -S --needed --noconfirm "$@"
+  yay -S --needed --noconfirm "$@" || true
+
+  # yay exits 0 even when its final pacman step fails (most often "sudo: a
+  # terminal is required to read the password"), so the packages are checked
+  # rather than trusting the exit status.
+  local pkg missing=()
+  for pkg in "$@"; do
+    pkg_installed "$pkg" || missing+=("$pkg")
+  done
+
+  if ((${#missing[@]})); then
+    log_error "Not installed: ${missing[*]}"
+    log_error "yay built the package but could not run pacman without a password."
+    log_error "Re-run this module from a real terminal window."
+    return 1
+  fi
 }
