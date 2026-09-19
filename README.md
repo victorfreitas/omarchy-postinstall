@@ -65,3 +65,7 @@ Config edits should go through `write_managed_block`, which wraps changes in
 `omarchy-setup:<id>` markers, backs up the file, and replaces the block on
 re-runs instead of duplicating it. Hyprland config goes through
 `hyprland_apply_block`, which also reloads and rolls back on config errors.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
