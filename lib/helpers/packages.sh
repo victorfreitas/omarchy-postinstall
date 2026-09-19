@@ -15,6 +15,15 @@ pkg_install() {
   fi
 }
 
+# Removes packages along with their config files and the dependencies nothing
+# else needs. pacman refuses when another installed package still depends on
+# one of them, which is the wanted outcome: the module fails instead of
+# breaking that package.
+pkg_remove() {
+  log_info "Removing: $*"
+  as_root pacman -Rns --noconfirm "$@"
+}
+
 service_enable() {
   log_info "Enabling service: $1"
   as_root systemctl enable --now "$1"
