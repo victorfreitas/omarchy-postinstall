@@ -10,6 +10,11 @@
 #     them, and Docker Desktop ships its own copies at the same paths in
 #     /usr/lib/docker/cli-plugins, so pacman refuses the install otherwise.
 #     They are put back if the install fails.
+#   * `docker compose` is the command in use. Removing docker-compose also
+#     removes the legacy /usr/bin/docker-compose, and Docker Desktop ships
+#     compose only as a CLI plugin, so /usr/local/bin/docker-compose is linked
+#     to that plugin as an alias for scripts that still call the old name. A
+#     shell alias was rejected: scripts do not see one.
 #   * qemu-base is named explicitly: the package depends on `qemu`, which three
 #     Arch packages provide, and this is the smallest.
 #   * Omarchy's docker package stays. It provides the `docker` CLI, which
@@ -29,15 +34,22 @@ _SHA256=ae93f42d4b096a0c71c2ca4263a2005de850f2af220d011150b9031dcb586bde
 _URL="https://desktop.docker.com/linux/main/amd64/$_REVISION/docker-desktop-x86_64.pkg.tar.zst"
 _FILE="$HOME/.cache/omarchy-setup/docker-desktop-$_VERSION-x86_64.pkg.tar.zst"
 
+_COMPOSE_PLUGIN=/usr/lib/docker/cli-plugins/docker-compose
+_COMPOSE_LINK=/usr/local/bin/docker-compose
+
 _checksum_ok() {
   [[ -f "$_FILE" ]] && sha256sum --check --status <<<"$_SHA256  $_FILE"
 }
 
-module_is_applied() {
-  pkg_installed "$_PKG"
+_compose_linked() {
+  [[ "$(readlink "$_COMPOSE_LINK")" == "$_COMPOSE_PLUGIN" ]]
 }
 
-module_apply() {
+module_is_applied() {
+  pkg_installed "$_PKG" && _compose_linked
+}
+
+_install() {
   # A download kept from a failed run is reused, it is about 700 MB.
   if ! _checksum_ok; then
     log_info "Downloading Docker Desktop $_VERSION"
@@ -68,4 +80,13 @@ module_apply() {
 
   rm -f "$_FILE"
   log_info "Start 'Docker Desktop' from the launcher and accept the terms"
+}
+
+module_apply() {
+  pkg_installed "$_PKG" || _install
+
+  if ! _compose_linked; then
+    log_info "Linking: $_COMPOSE_LINK"
+    as_root ln -sfn "$_COMPOSE_PLUGIN" "$_COMPOSE_LINK"
+  fi
 }
