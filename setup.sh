@@ -52,7 +52,7 @@ main() {
     shift
   done
 
-  # Modules write to $HOME and run yay, and escalate through as_root only for
+  # Modules write to $HOME and build packages, and escalate through as_root only for
   # the steps that need it. As root, $HOME is root's and everything else would
   # run privileged for no reason.
   if ((EUID == 0)); then
