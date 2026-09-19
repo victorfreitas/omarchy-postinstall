@@ -16,8 +16,8 @@
 #     switches to the desktop-linux context while Docker Desktop runs.
 #   * Not started on login: the VM holds memory while it runs. Start it from
 #     the launcher, or `systemctl --user enable --now docker-desktop`.
-#   * Signing in needs an initialised `pass` store (`pass init <gpg-id>`).
-#     Docker labels this package experimental on Arch.
+#   * Signing in needs an initialised `pass` store, which module `pass-store`
+#     sets up. Docker labels this package experimental on Arch.
 
 MODULE_DESCRIPTION="Install Docker Desktop from Docker's own Arch package"
 MODULE_GROUP="optional"
