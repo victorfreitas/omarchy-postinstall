@@ -1,5 +1,5 @@
 # PHP and Laravel development environment: PHP with Composer, SQLite and
-# Xdebug, Node through mise, and the Laravel installer.
+# Xdebug, Node and npm through mise, and the Laravel installer.
 #
 # Same result as `omarchy-install-dev-env laravel`, which is not called: it
 # runs sudo directly, which fails without a terminal, and it carries on after
@@ -15,6 +15,10 @@
 #     only builds PHP from source, and Composer is not in its registry.
 #   * Node is the LTS line (node@lts), the newest release of it. Omarchy's
 #     installer sets `latest`, which is a not yet LTS major for half the year.
+#   * npm is a mise tool of its own and takes over from the copy bundled with
+#     node. `npm -g update npm` was rejected: it updates the copy inside one
+#     node install, so every node upgrade brings the old npm back, while
+#     module mise-upgrade keeps this one current.
 #   * What counts is what `php -m` reports, not the ini lines, so a changed
 #     php.ini layout shows up as a failed module instead of a silent no-op.
 
@@ -49,7 +53,7 @@ module_is_applied() {
   pkg_installed "${_PACKAGES[@]}" &&
     [[ -z "$(_missing_php_modules)" ]] &&
     _composer_on_path &&
-    mise_installed node@lts &&
+    mise_installed node@lts npm &&
     [[ -x "$_LARAVEL" ]]
 }
 
@@ -82,7 +86,7 @@ module_apply() {
 
   _composer_on_path || write_managed_block "$_BASHRC" "$_BLOCK_ID" "$_CONTENT"
 
-  mise_installed node@lts || mise_install node@lts
+  mise_installed node@lts npm || mise_install node@lts npm
 
   if [[ ! -x "$_LARAVEL" ]]; then
     log_info "Installing the Laravel installer"
