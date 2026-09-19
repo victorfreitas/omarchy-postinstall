@@ -21,6 +21,13 @@ Post-install setup for a fresh Omarchy (Arch + Hyprland) system, written in plai
 
 There is no test suite, linter config, or build step. To check a module, run `./setup.sh --only <name> --dry-run`, then `--list` to confirm `module_is_applied` flips to `applied` after a real run. Modules change the live system (pacman, `/etc`, `~/.config`), so do not run them for real without being asked.
 
+## Working rules
+
+- The machine and this repo change together. A change made on this machine (a package, a file under `/etc` or `~/.config`, a setting) lands in a module in the same task, and a module is never bypassed by editing the live file by hand: the next fresh install would lose it. Report any step that could not be applied, with the command to run.
+- SOLID, performance and security hold in every change. One responsibility per file (`setup.sh` orchestrates only, a new concern gets its own `lib/*.sh` or `lib/helpers/<topic>.sh`), extend through the module contract instead of special-casing module names in the runner, avoid needless subshells and repeated module loading, never `eval`, and validate anything read back from disk (the saved selection) against the known module list.
+- Pick the simplest structure and add machinery only when strictly necessary. A package that needs nothing beyond `pkg_install` goes in the list in `modules/72-apps.sh`; a separate module needs a reason: post-install setup, its own checks, or a source outside the repos. Comments and commit messages stay short and direct.
+- A correction or lesson about this project is written here, not in Claude memory: a file outside the repo reaches no other machine.
+
 ## Architecture
 
 `setup.sh` only parses options and orchestrates. `lib/module.sh` discovers `modules/NN-name.sh` in glob order (NN is the run order) and runs each in its own subshell, so modules cannot leak variables or functions into each other and one failure does not stop the rest. Failed module names are collected and reported at the end with a non-zero exit.
