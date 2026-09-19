@@ -4,10 +4,15 @@ pkg_installed() {
   pacman -Q "$@" >/dev/null 2>&1
 }
 
-# Installs official repo packages, skipping ones already installed.
+# Installs official repo packages, skipping ones already installed. The
+# database is deliberately not refreshed: `-Sy` without a full upgrade leaves
+# the system partially upgraded.
 pkg_install() {
   log_info "Installing: $*"
-  as_root pacman -S --needed --noconfirm "$@"
+  if ! as_root pacman -S --needed --noconfirm "$@"; then
+    log_error "pacman failed. If it could not download a package, the database is stale: run omarchy-update first."
+    return 1
+  fi
 }
 
 service_enable() {
@@ -32,8 +37,9 @@ aur_install() {
 
   if ((${#missing[@]})); then
     log_error "Not installed: ${missing[*]}"
-    log_error "yay built the package but could not run pacman without a password."
-    log_error "Re-run this module from a real terminal window."
+    log_error "Check the yay output above. If the build finished and only the"
+    log_error "install step failed, yay could not ask for the sudo password:"
+    log_error "re-run this module from a real terminal window."
     return 1
   fi
 }

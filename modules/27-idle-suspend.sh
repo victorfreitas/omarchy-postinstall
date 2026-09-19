@@ -6,7 +6,8 @@
 # single listener that suspends. It honours Wayland idle inhibitors (video
 # playback) and Omarchy's stay-awake toggle.
 #
-# Depends on 25-nvidia-s0ix-suspend: without S0ix this machine hangs on suspend.
+# Depends on 25-nvidia-s0ix-suspend: without S0ix this machine hangs on
+# suspend, so the module refuses to run until the driver reports it active.
 
 MODULE_DESCRIPTION="Suspend after 15 minutes idle"
 
@@ -28,6 +29,11 @@ module_is_applied() {
 }
 
 module_apply() {
+  if nvidia_needs_s0ix && ! nvidia_s0ix_active; then
+    log_error "NVIDIA S0ix is not active, suspend would hang. Run nvidia-s0ix-suspend and reboot first."
+    return 1
+  fi
+
   pkg_installed hypridle || pkg_install hypridle
 
   backup_file "$_CONF"

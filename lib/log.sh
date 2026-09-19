@@ -1,13 +1,25 @@
 # Logging helpers. Source this file; do not execute it.
 
-if [[ -t 1 ]]; then
-  _C_RESET=$'\e[0m' _C_BLUE=$'\e[34m' _C_GREEN=$'\e[32m' _C_YELLOW=$'\e[33m' _C_RED=$'\e[31m' _C_BOLD=$'\e[1m'
-else
-  _C_RESET="" _C_BLUE="" _C_GREEN="" _C_YELLOW="" _C_RED="" _C_BOLD=""
-fi
+# Colour is decided per stream, so `2>errors.log` gets plain text while the
+# terminal side stays coloured.
+_log() {
+  local fd="$1" colour="$2" mark="$3"
+  shift 3
+  if [[ -t "$fd" ]]; then
+    printf '%s%s\e[0m %s\n' "$colour" "$mark" "$*" >&"$fd"
+  else
+    printf '%s %s\n' "$mark" "$*" >&"$fd"
+  fi
+}
 
-log_header() { printf '\n%s==> %s%s\n' "$_C_BOLD" "$*" "$_C_RESET"; }
-log_info() { printf '%s  ->%s %s\n' "$_C_BLUE" "$_C_RESET" "$*"; }
-log_ok() { printf '%s  ✓%s %s\n' "$_C_GREEN" "$_C_RESET" "$*"; }
-log_warn() { printf '%s  !%s %s\n' "$_C_YELLOW" "$_C_RESET" "$*" >&2; }
-log_error() { printf '%s  ✗%s %s\n' "$_C_RED" "$_C_RESET" "$*" >&2; }
+log_header() {
+  if [[ -t 1 ]]; then
+    printf '\n\e[1m==> %s\e[0m\n' "$*"
+  else
+    printf '\n==> %s\n' "$*"
+  fi
+}
+log_info() { _log 1 $'\e[34m' '  ->' "$@"; }
+log_ok() { _log 1 $'\e[32m' '  ✓' "$@"; }
+log_warn() { _log 2 $'\e[33m' '  !' "$@"; }
+log_error() { _log 2 $'\e[31m' '  ✗' "$@"; }

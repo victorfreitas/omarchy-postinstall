@@ -20,21 +20,32 @@ _in_csv() {
   [[ -n "$2" && ",$2," == *",$1,"* ]]
 }
 
+# Warns about names in a comma-separated list that match no module, so a typo
+# in --only or --skip does not pass silently.
+_warn_unknown() {
+  local option="$1" names="$2" known="$3" name
+  for name in ${names//,/ }; do
+    _in_csv "$name" "$known" || log_warn "$option: no module named '$name'"
+  done
+}
+
 module_discover() {
-  local only="$1" skip="$2" file name
+  local only="$1" skip="$2" file name known=""
   for file in "$MODULES_DIR"/[0-9][0-9]-*.sh; do
     [[ -e "$file" ]] || continue
     name="$(module_name "$file")"
+    known+="${known:+,}$name"
     if [[ -n "$only" ]] && ! _in_csv "$name" "$only"; then continue; fi
     if _in_csv "$name" "$skip"; then continue; fi
     echo "$file"
   done
+  _warn_unknown --only "$only" "$known"
+  _warn_unknown --skip "$skip" "$known"
 }
 
 # Loads a module into the current (sub)shell and validates its contract.
 _module_load() {
-  local file="$1"
-  source "$ROOT_DIR/lib/log.sh"
+  local file="$1" helper
   for helper in "$ROOT_DIR"/lib/helpers/*.sh; do
     source "$helper"
   done
@@ -72,21 +83,26 @@ module_run() {
       exit 0
     fi
 
-    # module_run is called as `module_run ... || ...`, and bash suppresses
-    # errexit inside a subshell used as an operand of ||. The status is
-    # therefore tested explicitly rather than left to `set -e`.
-    if ! module_apply; then
-      log_error "Failed"
-      exit 1
-    fi
+    module_apply
     log_ok "Done"
   )
 }
 
 module_run_all() {
-  local file failed=()
+  local file status failed=()
   for file in "$@"; do
-    module_run "$file" || failed+=("$(module_name "$file")")
+    # Never `module_run ... || ...`: bash suspends errexit in a subshell used
+    # as an operand of ||, and a command failing halfway through module_apply
+    # would go unnoticed. errexit is lifted here only to collect the status.
+    set +e
+    module_run "$file"
+    status=$?
+    set -e
+
+    if ((status != 0)); then
+      log_error "Failed"
+      failed+=("$(module_name "$file")")
+    fi
   done
 
   echo

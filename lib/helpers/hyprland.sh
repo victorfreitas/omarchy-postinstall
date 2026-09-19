@@ -25,3 +25,26 @@ hyprland_reload() {
   fi
   log_info "Hyprland reloaded without errors"
 }
+
+# Writes a managed block into a Hyprland config file and reloads. A block that
+# breaks the config is rolled back: left in place it would match on the next
+# run and the module would report itself applied over a broken config.
+hyprland_apply_block() {
+  local file="$1" id="$2" content="$3" snapshot
+  snapshot="$(mktemp)"
+  [[ ! -f "$file" ]] || cat "$file" >"$snapshot"
+
+  if ! write_managed_block "$file" "$id" "$content" "--"; then
+    rm -f "$snapshot"
+    return 1
+  fi
+
+  if ! hyprland_reload; then
+    cat "$snapshot" >"$file"
+    rm -f "$snapshot"
+    hyprctl reload >/dev/null 2>&1 || true
+    log_error "Rolled back $file"
+    return 1
+  fi
+  rm -f "$snapshot"
+}

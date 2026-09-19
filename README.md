@@ -39,10 +39,11 @@ module_apply() {
 }
 ```
 
-Each module runs in its own subshell with `set -euo pipefail`, so a failing
-module is reported and the rest still run. Shared logic belongs in a new
+Each module runs in its own subshell with `set -euo pipefail`: the first
+failing command aborts that module, it is reported, and the rest still run. Shared logic belongs in a new
 `lib/helpers/<topic>.sh`, not copied between modules.
 
 Config edits should go through `write_managed_block`, which wraps changes in
 `omarchy-setup:<id>` markers, backs up the file, and replaces the block on
-re-runs instead of duplicating it.
+re-runs instead of duplicating it. Hyprland config goes through
+`hyprland_apply_block`, which also reloads and rolls back on config errors.

@@ -13,6 +13,5 @@ module_is_applied() {
 }
 
 module_apply() {
-  write_managed_block "$_FILE" "$_BLOCK_ID" "$_CONTENT" "--"
-  hyprland_reload
+  hyprland_apply_block "$_FILE" "$_BLOCK_ID" "$_CONTENT"
 }

@@ -17,7 +17,3 @@ module_apply() {
   log_info "Starting asusd"
   as_root systemctl start asusd
 }
-
-is_asus_laptop() {
-  grep -qi "asustek" /sys/class/dmi/id/sys_vendor 2>/dev/null
-}

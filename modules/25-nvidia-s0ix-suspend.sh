@@ -16,16 +16,12 @@ MODULE_DESCRIPTION="Enable NVIDIA S0ix power management so s2idle suspend resume
 _CONF=/etc/modprobe.d/nvidia-s0ix.conf
 _CONTENT="options nvidia NVreg_EnableS0ixPowerManagement=1"
 
-_applies_here() {
-  [[ -f /proc/driver/nvidia/params ]] && grep -q '\[s2idle\]' /sys/power/mem_sleep 2>/dev/null
-}
-
 module_is_applied() {
-  ! _applies_here || { [[ -f "$_CONF" ]] && grep -qxF "$_CONTENT" "$_CONF"; }
+  ! nvidia_needs_s0ix || { [[ -f "$_CONF" ]] && grep -qxF "$_CONTENT" "$_CONF"; }
 }
 
 module_apply() {
-  if ! _applies_here; then
+  if ! nvidia_needs_s0ix; then
     log_info "No NVIDIA driver or sleep mode is not s2idle, nothing to do"
     return 0
   fi
@@ -34,11 +30,12 @@ module_apply() {
     log_warn "GPU does not report S0ix support; enabling it anyway per NVIDIA README is harmless but may not help"
   fi
 
-  # One privileged call so a pkexec prompt is only shown once.
-  as_root bash -c "printf '%s\n' '$_CONTENT' > '$_CONF' && limine-mkinitcpio"
+  # One privileged call so a pkexec prompt is only shown once. Values go in
+  # as arguments so nothing is spliced into the root shell's command string.
+  as_root bash -c 'printf "%s\n" "$1" >"$2" && limine-mkinitcpio' _ "$_CONTENT" "$_CONF"
   log_info "Wrote $_CONF and rebuilt the initramfs"
 
-  if grep -q '^EnableS0ixPowerManagement: 0' /proc/driver/nvidia/params; then
+  if ! nvidia_s0ix_active; then
     log_warn "Reboot required: the running driver still has S0ix disabled"
   fi
 }

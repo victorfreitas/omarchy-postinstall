@@ -14,7 +14,8 @@ module_apply() {
 
   if pkg_installed nvidia-open-dkms; then
     local kernel_release
-    kernel_release="$(basename "$(pacman -Qlq linux-lts | grep -m1 '^/usr/lib/modules/[^/]*/$')")"
+    # Every kernel's module directory names its owning package in pkgbase.
+    kernel_release="$(basename "$(dirname "$(grep -lx linux-lts /usr/lib/modules/*/pkgbase)")")"
     if dkms status -k "$kernel_release" 2>/dev/null | grep -q "nvidia.*installed"; then
       log_info "NVIDIA DKMS module built for $kernel_release"
     else

@@ -4,7 +4,9 @@
 #   * `ssh -T github.com` connects as the local user; GitHub only accepts `git`.
 #   * the key is ~/.ssh/id_dev, which ssh never offers on its own — only the
 #     default names (id_rsa, id_ecdsa, id_ed25519, id_dsa) are tried.
-# A Host block fixes both.
+# A Host block fixes both. It is appended to the end of the file and ssh keeps
+# the first value it finds, so a `Host *` above it that sets User or
+# IdentityFile still wins.
 #
 # No passphrase caching: AddKeysToAgent and the gcr-ssh-agent socket were tried
 # and dropped, so ssh prompts for the key passphrase on each use.
