@@ -29,7 +29,8 @@ _PACKAGES=(php composer php-sqlite xdebug)
 _EXTENSIONS=(bcmath intl iconv pdo_sqlite pdo_mysql)
 _PHP_INI=/etc/php/php.ini
 _XDEBUG_INI=/etc/php/conf.d/xdebug.ini
-_BASHRC="$HOME/.bashrc"
+# ~/.zshrc only counts when it exists, which is when module zsh was chosen.
+_RC_FILES=("$HOME/.bashrc" "$HOME/.zshrc")
 _BLOCK_ID="composer-path"
 _COMPOSER_BIN_DIR='$HOME/.config/composer/vendor/bin'
 _CONTENT="export PATH=\"$_COMPOSER_BIN_DIR:\$PATH\""
@@ -45,20 +46,25 @@ _missing_php_modules() {
 
 # Omarchy's installer appends the same line without markers, so any mention of
 # the directory counts.
-_composer_on_path() {
-  grep -qF "$_COMPOSER_BIN_DIR" "$_BASHRC" 2>/dev/null
+_rc_files_missing_composer() {
+  local rc
+  for rc in "${_RC_FILES[@]}"; do
+    if [[ "$rc" == "$HOME/.bashrc" || -f "$rc" ]] && ! grep -qF "$_COMPOSER_BIN_DIR" "$rc" 2>/dev/null; then
+      printf '%s\n' "$rc"
+    fi
+  done
 }
 
 module_is_applied() {
   pkg_installed "${_PACKAGES[@]}" &&
     [[ -z "$(_missing_php_modules)" ]] &&
-    _composer_on_path &&
+    [[ -z "$(_rc_files_missing_composer)" ]] &&
     mise_installed node@lts npm &&
     [[ -x "$_LARAVEL" ]]
 }
 
 module_apply() {
-  local missing
+  local missing rc
 
   pkg_installed "${_PACKAGES[@]}" || pkg_install "${_PACKAGES[@]}"
 
@@ -84,7 +90,9 @@ module_apply() {
     fi
   fi
 
-  _composer_on_path || write_managed_block "$_BASHRC" "$_BLOCK_ID" "$_CONTENT"
+  while IFS= read -r rc; do
+    [[ -z "$rc" ]] || write_managed_block "$rc" "$_BLOCK_ID" "$_CONTENT"
+  done < <(_rc_files_missing_composer)
 
   mise_installed node@lts npm || mise_install node@lts npm
 
