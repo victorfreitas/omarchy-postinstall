@@ -45,6 +45,12 @@ Shared logic goes in a new `lib/helpers/<topic>.sh`, never copied between module
 - `hyprland_apply_block FILE ID CONTENT` is `write_managed_block` plus `hyprland_reload` for Hyprland's Lua config, and rolls the file back when the reload reports config errors. `hyprland_reload` is a no-op with a warning when Hyprland is not running.
 - `lib/helpers/hardware.sh` holds hardware guards shared between modules (`is_asus_laptop`, `nvidia_needs_s0ix`, `nvidia_s0ix_active`). Module 27 refuses to enable idle suspend until S0ix is active, because suspend hangs this machine without it.
 
+## Security
+
+`setup.sh` refuses to run as root; only single steps escalate, through `as_root`. Pass values to a root shell as arguments (`as_root bash -c '... "$1"' _ "$value"`), never spliced into the command string. Files holding secrets are created under `umask 077`, not chmodded afterwards.
+
+Modules `08-firewall` (ufw on, inbound denied), `09-sysctl-hardening` and `90-opensnitch` (per-application outbound prompts) keep the system's baseline. `firewall` is normally already applied after an Omarchy install; it exists so drift shows up as `pending` in `--list`.
+
 ## Package sources
 
 Prefer the official repo, then an AUR `-bin` package that repackages the vendor's release, and a from-source AUR package only as a last resort. `70-github-desktop.sh` documents a case where the source build breaks on a Node LTS conflict.
