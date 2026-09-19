@@ -1,6 +1,7 @@
 # Maximized windows: no outer/inner gaps and no borders.
 
 MODULE_DESCRIPTION="Remove window gaps and borders in Hyprland"
+MODULE_GROUP="optional"
 
 _FILE="$HYPR_CONFIG_DIR/looknfeel.lua"
 _BLOCK_ID="no-gaps"

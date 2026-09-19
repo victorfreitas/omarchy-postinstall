@@ -12,6 +12,7 @@
 # the directory does not exist.
 
 MODULE_DESCRIPTION="Install Ghostty and make it the default terminal"
+MODULE_GROUP="optional"
 
 _default_terminal() {
   omarchy-default-terminal 2>/dev/null

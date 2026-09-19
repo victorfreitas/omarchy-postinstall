@@ -3,6 +3,7 @@
 # the menu open and closed.
 
 MODULE_DESCRIPTION="Open the Omarchy menu with a three-finger swipe up"
+MODULE_GROUP="optional"
 
 _FILE="$HYPR_CONFIG_DIR/input.lua"
 _BLOCK_ID="touchpad-menu-gesture"

@@ -4,12 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Post-install setup for a fresh Omarchy (Arch + Hyprland) system, written in plain Bash. It targets one specific machine (ASUS TUF A15, NVIDIA dGPU only, s2idle), so modules guard on hardware before acting.
+Post-install setup for a fresh Omarchy (Arch + Hyprland) system, written in plain Bash. It was written for one machine (ASUS TUF A15, NVIDIA dGPU only, s2idle) but has to stay usable on any Omarchy install: hardware modules guard on the hardware before acting, and personal preferences are optional modules the user picks.
 
 ## Commands
 
 ```bash
-./setup.sh                        # run every module
+./setup.sh                        # core + hardware modules, plus the chosen optional ones
+./setup.sh --choose               # reopen the optional module checklist
+./setup.sh --all                  # every module, ignoring the saved choice
 ./setup.sh --list                 # each module with applied/pending status
 ./setup.sh --dry-run              # show what would apply, change nothing
 ./setup.sh --only NAME[,NAME]     # run a single module (name = filename without NN- and .sh)
@@ -23,11 +25,14 @@ There is no test suite, linter config, or build step. To check a module, run `./
 
 `setup.sh` only parses options and orchestrates. `lib/module.sh` discovers `modules/NN-name.sh` in glob order (NN is the run order) and runs each in its own subshell, so modules cannot leak variables or functions into each other and one failure does not stop the rest. Failed module names are collected and reported at the end with a non-zero exit.
 
+`lib/selection.sh` owns the choice of optional modules: a `gum choose` checklist on the first interactive run, saved to `~/.config/omarchy-setup/modules`. `--only` and `--all` bypass it, `--list` never prompts, and without a TTY and a saved choice optional modules are left out. Modules never see the selection, the same way they never see `DRY_RUN`. `module_records` emits one TSV record per module (file, name, group, status, description) and the selection is a filter over that stream; it only computes `module_is_applied` for the modules whose status is shown, because `system-update`'s check goes to the network.
+
 Inside that subshell, `_module_load` sources `lib/log.sh` and every `lib/helpers/*.sh` before the module file, so helpers are available without any `source` line in the module, including at the module's top level (e.g. `$HYPR_CONFIG_DIR` in variable assignments).
 
 Module contract:
 
 - `MODULE_DESCRIPTION` and `module_apply` are required. `module_apply` must be idempotent.
+- `MODULE_GROUP` is `core` (baseline for every install), `hardware` (always runs, guards on the hardware itself) or `optional` (personal preference, runs only when chosen). A missing group means `optional`, so a forgotten line never pushes a preference onto another machine. Hardware is detected, never asked about.
 - `module_is_applied` is optional and defaults to "not applied". It returns 0 when there is nothing to do, which includes "this hardware is not affected" (see `25-nvidia-s0ix-suspend.sh`).
 - `DRY_RUN` and `FORCE` are handled by the runner; modules never check them.
 - Module private names are prefixed with `_` (`_FILE`, `_BLOCK_ID`, `_CONTENT`, `_threshold_file`).

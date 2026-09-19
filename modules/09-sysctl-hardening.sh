@@ -30,6 +30,7 @@
 # turned back off without a reboot, and the second breaks gdb and strace -p.
 
 MODULE_DESCRIPTION="Harden kernel sysctl settings"
+MODULE_GROUP="core"
 
 _CONF=/etc/sysctl.d/90-omarchy-setup-hardening.conf
 _CONTENT="kernel.kptr_restrict = 1

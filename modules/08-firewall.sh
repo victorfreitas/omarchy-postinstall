@@ -21,6 +21,7 @@
 # its state in.
 
 MODULE_DESCRIPTION="Keep ufw enabled and dropping unsolicited inbound traffic"
+MODULE_GROUP="core"
 
 _policy_is_closed() {
   grep -qE "^DEFAULT_$1_POLICY=\"(DROP|REJECT)\"" /etc/default/ufw 2>/dev/null

@@ -12,6 +12,7 @@
 # and dropped, so ssh prompts for the key passphrase on each use.
 
 MODULE_DESCRIPTION="Configure SSH for GitHub"
+MODULE_GROUP="optional"
 
 _SSH_CONFIG="$HOME/.ssh/config"
 _BLOCK_ID="github-ssh"

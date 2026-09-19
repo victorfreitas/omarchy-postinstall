@@ -10,6 +10,7 @@
 # suspend, so the module refuses to run until the driver reports it active.
 
 MODULE_DESCRIPTION="Suspend after 15 minutes idle"
+MODULE_GROUP="optional"
 
 _CONF="$HOME/.config/hypr/hypridle.conf"
 _CONTENT='general {

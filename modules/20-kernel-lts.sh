@@ -2,6 +2,7 @@
 # limine-mkinitcpio-hook adds the Limine entry and DKMS builds NVIDIA for it.
 
 MODULE_DESCRIPTION="Install linux-lts kernel as a fallback boot entry"
+MODULE_GROUP="optional"
 
 _PACKAGES=(linux-lts linux-lts-headers)
 

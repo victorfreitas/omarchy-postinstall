@@ -33,6 +33,7 @@
 # Preferences. Not forced, native Wayland may be fine.
 
 MODULE_DESCRIPTION="Install OpenSnitch to prompt for outbound connections per application"
+MODULE_GROUP="core"
 
 _PKG=opensnitch
 _DESKTOP_ENTRY=/usr/share/applications/opensnitch_ui.desktop

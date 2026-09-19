@@ -1,6 +1,7 @@
 # ASUS laptop control: RGB keyboard, fan/power profiles, Armoury key, charge limit.
 
 MODULE_DESCRIPTION="Install asusctl for ASUS keyboard RGB, profiles and battery control"
+MODULE_GROUP="hardware"
 
 module_is_applied() {
   ! is_asus_laptop || { pkg_installed asusctl && systemctl is-active --quiet asusd; }

@@ -4,6 +4,7 @@
 _LIMIT="${BATTERY_CHARGE_LIMIT:-80}"
 
 MODULE_DESCRIPTION="Limit battery charge to $_LIMIT%"
+MODULE_GROUP="optional"
 
 _threshold_file() {
   compgen -G "/sys/class/power_supply/BAT*/charge_control_end_threshold" | head -1

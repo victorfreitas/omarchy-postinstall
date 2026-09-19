@@ -8,6 +8,7 @@
 # runtime libs, so no Node toolchain is involved at all.
 
 MODULE_DESCRIPTION="Install GitHub Desktop from the prebuilt GitHub release"
+MODULE_GROUP="optional"
 
 _PKG="github-desktop-bin"
 

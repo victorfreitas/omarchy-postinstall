@@ -11,6 +11,7 @@
 # It calls sudo itself, so it is not wrapped in as_root and needs a terminal.
 
 MODULE_DESCRIPTION="Update the system with omarchy-update"
+MODULE_GROUP="core"
 
 # checkupdates syncs a private copy of the database, so checking never leaves
 # the real one refreshed without an upgrade. It exits 2 when nothing is pending.

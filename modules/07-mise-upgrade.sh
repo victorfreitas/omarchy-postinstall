@@ -9,6 +9,7 @@
 # update is wanted: `./setup.sh --only mise-upgrade`.
 
 MODULE_DESCRIPTION="Upgrade mise-managed tools (mup)"
+MODULE_GROUP="core"
 
 export MISE_MINIMUM_RELEASE_AGE=0
 

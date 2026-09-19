@@ -3,6 +3,7 @@
 # the file is folded into a single one instead of adding another.
 
 MODULE_DESCRIPTION="Enable Chromium vertical tabs sidebar with expand on hover"
+MODULE_GROUP="optional"
 
 _FLAGS_FILE="$HOME/.config/chromium-flags.conf"
 _FLAG="--enable-features"

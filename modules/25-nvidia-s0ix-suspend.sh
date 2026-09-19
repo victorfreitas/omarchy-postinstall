@@ -12,6 +12,7 @@
 # only take effect after a rebuild and a reboot.
 
 MODULE_DESCRIPTION="Enable NVIDIA S0ix power management so s2idle suspend resumes"
+MODULE_GROUP="hardware"
 
 _CONF=/etc/modprobe.d/nvidia-s0ix.conf
 _CONTENT="options nvidia NVreg_EnableS0ixPowerManagement=1"

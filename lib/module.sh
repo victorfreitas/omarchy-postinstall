@@ -3,16 +3,24 @@
 # Module contract — every file in modules/ named NN-name.sh must define:
 #   MODULE_DESCRIPTION   one-line summary
 #   module_apply         performs the change (must be idempotent)
+#   MODULE_GROUP         core, hardware or optional (see below)
 # and may define:
 #   module_is_applied    returns 0 when nothing needs to be done
+#
+# Groups keep the setup usable on machines other than the author's:
+#   core       baseline every install gets (updates, firewall, hardening)
+#   hardware   always runs, and guards on the hardware itself before acting
+#   optional   personal preference, only runs when chosen (lib/selection.sh)
+# A module without a group is optional, so a forgotten line can never push a
+# preference onto someone else's machine.
 #
 # The module name is the filename without the NN- prefix and .sh suffix.
 # Each module runs in its own subshell, so modules cannot leak state
 # or function definitions into each other.
 
 module_name() {
-  local base
-  base="$(basename "$1" .sh)"
+  local base="${1##*/}"
+  base="${base%.sh}"
   echo "${base#[0-9][0-9]-}"
 }
 
@@ -52,17 +60,47 @@ _module_load() {
   source "$file"
   declare -F module_apply >/dev/null || { log_error "$(module_name "$file"): missing module_apply"; return 1; }
   declare -F module_is_applied >/dev/null || module_is_applied() { return 1; }
+  MODULE_GROUP="${MODULE_GROUP:-optional}"
+  case "$MODULE_GROUP" in
+    core | hardware | optional) ;;
+    *) log_error "$(module_name "$file"): unknown MODULE_GROUP '$MODULE_GROUP'"; return 1 ;;
+  esac
 }
 
-module_list() {
-  local file
+# Prints one tab-separated record per module: file, name, group, status,
+# description. STATUS_FOR says which modules get a real status (none, optional
+# or all); the rest get "-". module_is_applied is not free (system-update asks
+# the network), so callers only pay for the statuses they show.
+module_records() {
+  local status_for="$1" file
+  shift
   for file in "$@"; do
     (
       _module_load "$file" || exit 0
-      local status="pending"
-      module_is_applied && status="applied"
-      printf '  %-28s %-8s %s\n' "$(module_name "$file")" "$status" "${MODULE_DESCRIPTION:-}"
+      local status="-"
+      if [[ "$status_for" == all || "$status_for" == "$MODULE_GROUP" ]]; then
+        status="pending"
+        module_is_applied && status="applied"
+      fi
+      printf '%s\t%s\t%s\t%s\t%s\n' \
+        "$file" "$(module_name "$file")" "$MODULE_GROUP" "$status" "${MODULE_DESCRIPTION:-}"
     )
+  done
+}
+
+# Reads module records on stdin.
+module_list() {
+  local name group status description
+  while IFS=$'\t' read -r _ name group status description; do
+    printf '  %-28s %-9s %-8s %s\n' "$name" "$group" "$status" "$description"
+  done
+}
+
+# Reads module records on stdin and prints the files that are left to run.
+module_runnable() {
+  local file status
+  while IFS=$'\t' read -r file _ _ status _; do
+    [[ "$status" == skipped ]] || echo "$file"
   done
 }
 

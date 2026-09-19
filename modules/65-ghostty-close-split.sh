@@ -3,6 +3,7 @@
 # the tab with it. The tab still closes once its last split does.
 
 MODULE_DESCRIPTION="Close only the focused Ghostty split with Ctrl+Shift+W"
+MODULE_GROUP="optional"
 
 _FILE="$HOME/.config/ghostty/config"
 _BLOCK_ID="ghostty-close-split"
