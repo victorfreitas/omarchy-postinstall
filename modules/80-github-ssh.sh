@@ -48,7 +48,7 @@ module_is_applied() {
 }
 
 module_apply() {
-  command -v gh >/dev/null 2>&1 || pkg_install github-cli
+  command -v gh >/dev/null 2>&1 || mise_install gh
 
   # On a fresh install neither ~/.ssh nor the config exist yet. Without this
   # they, and the new key, would be created world-readable.

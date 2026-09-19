@@ -11,6 +11,8 @@
 #     warns about it on each call.
 #   * openssl is on Omarchy's list but compiled into Arch's php, so there is
 #     no line to uncomment.
+#   * PHP and Composer stay on pacman although tools come from mise here: mise
+#     only builds PHP from source, and Composer is not in its registry.
 #   * What counts is what `php -m` reports, not the ini lines, so a changed
 #     php.ini layout shows up as a failed module instead of a silent no-op.
 
@@ -41,15 +43,11 @@ _composer_on_path() {
   grep -qF "$_COMPOSER_BIN_DIR" "$_BASHRC" 2>/dev/null
 }
 
-_has_node() {
-  [[ -n "$(mise ls --global --installed node 2>/dev/null)" ]]
-}
-
 module_is_applied() {
   pkg_installed "${_PACKAGES[@]}" &&
     [[ -z "$(_missing_php_modules)" ]] &&
     _composer_on_path &&
-    _has_node &&
+    mise_installed node &&
     [[ -x "$_LARAVEL" ]]
 }
 
@@ -82,10 +80,7 @@ module_apply() {
 
   _composer_on_path || write_managed_block "$_BASHRC" "$_BLOCK_ID" "$_CONTENT"
 
-  if ! _has_node; then
-    log_info "Installing Node through mise"
-    mise use --global node
-  fi
+  mise_installed node || mise_install node
 
   if [[ ! -x "$_LARAVEL" ]]; then
     log_info "Installing the Laravel installer"
