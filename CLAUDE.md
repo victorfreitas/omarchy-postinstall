@@ -58,4 +58,4 @@ Modules `08-firewall` (ufw on, inbound denied), `09-sysctl-hardening` and `90-op
 
 ## Package sources
 
-Prefer the official repo, then an AUR `-bin` package that repackages the vendor's release, and a from-source AUR package only as a last resort. `70-github-desktop.sh` documents a case where the source build breaks on a Node LTS conflict.
+Prefer the official repo, then an AUR `-bin` package that repackages the vendor's release, and a from-source AUR package only as a last resort. No module installs from the AUR today. When the vendor publishes its own Arch package outside any repo, install that file with a pinned checksum, as `78-docker-desktop.sh` does.

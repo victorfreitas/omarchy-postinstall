@@ -20,7 +20,7 @@ Modules belong to one of three groups, shown by `--list`:
 - `core` runs everywhere: system update, firewall, sysctl hardening, OpenSnitch.
 - `hardware` runs everywhere too, but each module checks the hardware first and
   does nothing when it does not apply (ASUS laptop, NVIDIA with s2idle).
-- `optional` is personal preference (no gaps, Ghostty, GitHub Desktop, ...). The
+- `optional` is personal preference (no gaps, Ghostty, Bitwarden, ...). The
   first run asks which ones you want and remembers the answer in
   `~/.config/omarchy-setup/modules`; the rest show as `skipped`.
 
