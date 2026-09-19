@@ -44,6 +44,14 @@ main() {
     shift
   done
 
+  # Modules write to $HOME and run yay, and escalate through as_root only for
+  # the steps that need it. As root, $HOME is root's and everything else would
+  # run privileged for no reason.
+  if ((EUID == 0)); then
+    log_error "Run as your regular user, not as root or with sudo."
+    exit 1
+  fi
+
   local modules
   mapfile -t modules < <(module_discover "$only" "$skip")
 

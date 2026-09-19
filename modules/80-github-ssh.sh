@@ -31,6 +31,9 @@ module_apply() {
     return 1
   fi
 
+  # On a fresh install neither ~/.ssh nor the config exist yet. Without this
+  # they would be created world-readable and only tightened by the chmod below.
+  umask 077
   write_managed_block "$_SSH_CONFIG" "$_BLOCK_ID" "$_CONTENT" "#"
   chmod 700 "$HOME/.ssh"
   chmod 600 "$_SSH_CONFIG"
