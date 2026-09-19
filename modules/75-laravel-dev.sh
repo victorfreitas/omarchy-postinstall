@@ -13,6 +13,8 @@
 #     no line to uncomment.
 #   * PHP and Composer stay on pacman although tools come from mise here: mise
 #     only builds PHP from source, and Composer is not in its registry.
+#   * Node is the LTS line (node@lts), the newest release of it. Omarchy's
+#     installer sets `latest`, which is a not yet LTS major for half the year.
 #   * What counts is what `php -m` reports, not the ini lines, so a changed
 #     php.ini layout shows up as a failed module instead of a silent no-op.
 
@@ -47,7 +49,7 @@ module_is_applied() {
   pkg_installed "${_PACKAGES[@]}" &&
     [[ -z "$(_missing_php_modules)" ]] &&
     _composer_on_path &&
-    mise_installed node &&
+    mise_installed node@lts &&
     [[ -x "$_LARAVEL" ]]
 }
 
@@ -80,7 +82,7 @@ module_apply() {
 
   _composer_on_path || write_managed_block "$_BASHRC" "$_BLOCK_ID" "$_CONTENT"
 
-  mise_installed node || mise_install node
+  mise_installed node@lts || mise_install node@lts
 
   if [[ ! -x "$_LARAVEL" ]]; then
     log_info "Installing the Laravel installer"
