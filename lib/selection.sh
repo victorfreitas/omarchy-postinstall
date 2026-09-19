@@ -3,8 +3,7 @@
 # core and hardware modules always run. Optional ones are personal taste, so
 # they are picked once in a gum checklist and remembered in SELECTION_FILE;
 # --choose reopens the checklist. Asking about hardware was rejected: the
-# machine can answer that itself, and a wrong "no" to NVIDIA S0ix leaves a
-# laptop that hangs on suspend.
+# machine can answer that itself, and a wrong "no" leaves it misconfigured.
 #
 # A selection is a comma-separated list of module names, or "*" for every
 # module (--all, and --only where the names are already explicit).

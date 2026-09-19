@@ -40,7 +40,7 @@ Module contract:
 
 - `MODULE_DESCRIPTION` and `module_apply` are required. `module_apply` must be idempotent.
 - `MODULE_GROUP` is `core` (baseline for every install), `hardware` (always runs, guards on the hardware itself) or `optional` (personal preference, runs only when chosen). A missing group means `optional`, so a forgotten line never pushes a preference onto another machine. Hardware is detected, never asked about.
-- `module_is_applied` is optional and defaults to "not applied". It returns 0 when there is nothing to do, which includes "this hardware is not affected" (see `25-nvidia-s0ix-suspend.sh`).
+- `module_is_applied` is optional and defaults to "not applied". It returns 0 when there is nothing to do, which includes "this hardware is not affected" (see `30-asusctl.sh`).
 - `DRY_RUN` and `FORCE` are handled by the runner; modules never check them.
 - Module private names are prefixed with `_` (`_FILE`, `_BLOCK_ID`, `_CONTENT`, `_threshold_file`).
 - The header comment of each module records *why* the change exists and what was tried and rejected. Keep that when editing, and write it for new modules.
@@ -56,7 +56,7 @@ Shared logic goes in a new `lib/helpers/<topic>.sh`, never copied between module
 - `pkg_install` is for official repo packages and never refreshes the database (`-Sy` alone would be a partial upgrade); module `05-system-update` runs `omarchy-update` first so the database is current for every later module. `aur_install_pinned PKG COMMIT` builds an AUR package from one reviewed commit of its AUR repository with `makepkg` as the regular user and installs the result with `pacman -U`; there is no unpinned AUR install, because the AUR is unvetted and `yay --noconfirm` builds whatever it serves that day. Pair it with `pkg_hold PKG` (`IgnorePkg`, checked by `pkg_is_held`) so `omarchy-update` does not upgrade the package past the reviewed commit.
 - `mise_install TOOL...` sets the newest release of each tool in the global mise config, and `mise_installed TOOL...` checks the whole list with one mise call. Before `pkg_install`-ing a command line tool, check `mise registry TOOL`.
 - `hyprland_apply_block FILE ID CONTENT` is `write_managed_block` plus `hyprland_reload` for Hyprland's Lua config, and rolls the file back when the reload reports config errors. `hyprland_reload` is a no-op with a warning when Hyprland is not running.
-- `lib/helpers/hardware.sh` holds hardware guards shared between modules (`is_asus_laptop`, `nvidia_needs_s0ix`, `nvidia_s0ix_active`). Module 27 refuses to enable idle suspend until S0ix is active, because suspend hangs this machine without it.
+- `lib/helpers/hardware.sh` holds hardware guards shared between modules (`is_asus_laptop`).
 
 ## Security
 
