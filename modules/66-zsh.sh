@@ -4,6 +4,9 @@
 #   * No plugin manager and no oh-my-zsh: it loads dozens of files on every
 #     start for what is four `source` lines here. The plugins are Arch
 #     packages, so pacman upgrades them.
+#   * History search by prefix on the arrow keys uses the widgets zsh ships
+#     (up-line-or-beginning-search). zsh-history-substring-search was not
+#     needed: it matches anywhere in the line, and the wish was the start.
 #   * Powerlevel10k is in no official repo, only in the AUR. It is cloned from
 #     the vendor's GitHub repository, as its own instructions do, at the latest
 #     release tag. The pinned commit is the check: a commit hash fixes the
@@ -56,7 +59,20 @@ HISTFILE="$HOME/.zsh_history"
 HISTSIZE=32768
 SAVEHIST=$HISTSIZE
 setopt append_history share_history hist_ignore_all_dups hist_ignore_space
+# hist_ignore_all_dups only covers the list of this session: other terminals
+# still append repeats to the file. Skip them when searching, drop them when saving.
+setopt hist_find_no_dups hist_save_no_dups
 bindkey -e
+
+# Up and down walk only the history lines that start with what is typed.
+# Both spellings of the keys: terminals send one or the other by keypad mode.
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey "^[[A" up-line-or-beginning-search
+bindkey "^[OA" up-line-or-beginning-search
+bindkey "^[[B" down-line-or-beginning-search
+bindkey "^[OB" down-line-or-beginning-search
 
 # zsh-completions installs into the default fpath.
 autoload -Uz compinit
