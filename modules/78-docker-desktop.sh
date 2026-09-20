@@ -37,10 +37,6 @@ _FILE="$HOME/.cache/omarchy-setup/docker-desktop-$_VERSION-x86_64.pkg.tar.zst"
 _COMPOSE_PLUGIN=/usr/lib/docker/cli-plugins/docker-compose
 _COMPOSE_LINK=/usr/local/bin/docker-compose
 
-_checksum_ok() {
-  [[ -f "$_FILE" ]] && sha256sum --check --status <<<"$_SHA256  $_FILE"
-}
-
 _compose_linked() {
   [[ "$(readlink "$_COMPOSE_LINK")" == "$_COMPOSE_PLUGIN" ]]
 }
@@ -51,15 +47,7 @@ module_is_applied() {
 
 _install() {
   # A download kept from a failed run is reused, it is about 700 MB.
-  if ! _checksum_ok; then
-    log_info "Downloading Docker Desktop $_VERSION"
-    mkdir -p "$(dirname "$_FILE")"
-    curl --fail --location --proto '=https' --output "$_FILE" "$_URL"
-    if ! _checksum_ok; then
-      log_error "Checksum mismatch: $_FILE"
-      return 1
-    fi
-  fi
+  download_verified "$_URL" "$_FILE" "$_SHA256"
 
   log_info "Installing: $_PKG"
   as_root bash -c '

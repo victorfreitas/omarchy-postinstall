@@ -154,10 +154,6 @@ _p10k_installed() {
   [[ "$(git -C "$_P10K_DIR" rev-parse HEAD 2>/dev/null)" == "$_P10K_COMMIT" ]]
 }
 
-_p10k_config_current() {
-  [[ -f "$_P10K_CONFIG" && "$(<"$_P10K_CONFIG")" == "$_P10K_CONFIG_CONTENT" ]]
-}
-
 _is_login_shell() {
   [[ "$(getent passwd "$USER" | cut -d: -f7)" == "$_ZSH" ]]
 }
@@ -179,7 +175,7 @@ _install_p10k() {
 module_is_applied() {
   pkg_installed "${_PACKAGES[@]}" &&
     _p10k_installed &&
-    _p10k_config_current &&
+    file_matches "$_P10K_CONFIG" "$_P10K_CONFIG_CONTENT" &&
     managed_block_matches "$_ZSHRC" "$_BLOCK_ID" "$_CONTENT" &&
     _is_login_shell
 }
@@ -188,10 +184,9 @@ module_apply() {
   pkg_installed "${_PACKAGES[@]}" || pkg_install "${_PACKAGES[@]}"
   _p10k_installed || _install_p10k
 
-  if ! _p10k_config_current; then
-    log_info "Writing $_P10K_CONFIG"
+  if ! file_matches "$_P10K_CONFIG" "$_P10K_CONFIG_CONTENT"; then
     backup_file "$_P10K_CONFIG"
-    printf '%s\n' "$_P10K_CONFIG_CONTENT" >"$_P10K_CONFIG"
+    write_file "$_P10K_CONFIG" "$_P10K_CONFIG_CONTENT"
   fi
 
   write_managed_block "$_ZSHRC" "$_BLOCK_ID" "$_CONTENT"

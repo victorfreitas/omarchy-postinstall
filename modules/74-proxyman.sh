@@ -52,16 +52,8 @@ MimeType=x-scheme-handler/proxyman;"
 _AUR_PKG=proxyman-bin
 _PACMAN_CONF=/etc/pacman.conf
 
-_checksum_ok() {
-  [[ -f "$_FILE" ]] && sha256sum --check --status <<<"$_SHA256  $_FILE"
-}
-
 _proxyman_installed() {
   [[ -x "$_DIR/AppRun" ]] && grep -qxF "X-AppImage-Version=$_VERSION" "$_DIR/proxyman.desktop" 2>/dev/null
-}
-
-_file_current() {
-  [[ -f "$1" && "$(<"$1")" == "$2" ]]
 }
 
 _aur_leftovers() {
@@ -84,15 +76,7 @@ _remove_aur_package() {
 _install_proxyman() {
   local tmp
 
-  if ! _checksum_ok; then
-    log_info "Downloading Proxyman $_VERSION"
-    mkdir -p "$(dirname "$_FILE")"
-    curl --fail --location --proto '=https' --output "$_FILE" "$_URL"
-    if ! _checksum_ok; then
-      log_error "Checksum mismatch: $_FILE"
-      return 1
-    fi
-  fi
+  download_verified "$_URL" "$_FILE" "$_SHA256"
 
   # Unpacked in a temporary directory and renamed, so an interrupted run never
   # leaves half an app behind. The AppImage unpacks to ./squashfs-root.
@@ -109,8 +93,8 @@ _install_proxyman() {
 module_is_applied() {
   ! _aur_leftovers &&
     _proxyman_installed &&
-    _file_current "$_BIN" "$_LAUNCHER" &&
-    _file_current "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
+    file_matches "$_BIN" "$_LAUNCHER" &&
+    file_matches "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }
 
 module_apply() {
@@ -118,19 +102,11 @@ module_apply() {
 
   _proxyman_installed || _install_proxyman
 
-  if ! _file_current "$_BIN" "$_LAUNCHER"; then
-    log_info "Writing $_BIN"
-    mkdir -p "$(dirname "$_BIN")"
+  if ! file_matches "$_BIN" "$_LAUNCHER"; then
     rm -f "$_BIN"
-    printf '%s\n' "$_LAUNCHER" >"$_BIN"
+    write_file "$_BIN" "$_LAUNCHER"
     chmod +x "$_BIN"
   fi
 
-  if ! _file_current "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"; then
-    log_info "Writing $_DESKTOP_FILE"
-    mkdir -p "$(dirname "$_DESKTOP_FILE")"
-    rm -f "$_DESKTOP_FILE"
-    printf '%s\n' "$_DESKTOP_ENTRY" >"$_DESKTOP_FILE"
-    update-desktop-database "$(dirname "$_DESKTOP_FILE")"
-  fi
+  install_desktop_entry "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }

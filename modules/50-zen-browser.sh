@@ -54,28 +54,12 @@ Exec=$_DIR/zen --new-window %u
 Name=New Private Window
 Exec=$_DIR/zen --private-window %u"
 
-_checksum_ok() {
-  [[ -f "$_FILE" ]] && sha256sum --check --status <<<"$_SHA256  $_FILE"
-}
-
 _zen_installed() {
   [[ -x "$_DIR/zen" && "$(readlink "$_BIN")" == "$_DIR/zen" ]]
 }
 
-_desktop_entry_current() {
-  [[ -f "$_DESKTOP_FILE" && "$(<"$_DESKTOP_FILE")" == "$_DESKTOP_ENTRY" ]]
-}
-
 _install_zen() {
-  if ! _checksum_ok; then
-    log_info "Downloading Zen $_VERSION"
-    mkdir -p "$(dirname "$_FILE")"
-    curl --fail --location --proto '=https' --output "$_FILE" "$_URL"
-    if ! _checksum_ok; then
-      log_error "Checksum mismatch: $_FILE"
-      return 1
-    fi
-  fi
+  download_verified "$_URL" "$_FILE" "$_SHA256"
 
   # Unpacked next to the target and renamed, so an interrupted run never
   # leaves half a browser behind.
@@ -90,17 +74,10 @@ _install_zen() {
 }
 
 module_is_applied() {
-  _zen_installed && _desktop_entry_current
+  _zen_installed && file_matches "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }
 
 module_apply() {
   _zen_installed || _install_zen
-
-  if ! _desktop_entry_current; then
-    log_info "Writing $_DESKTOP_FILE"
-    mkdir -p "$(dirname "$_DESKTOP_FILE")"
-    rm -f "$_DESKTOP_FILE"
-    printf '%s\n' "$_DESKTOP_ENTRY" >"$_DESKTOP_FILE"
-    update-desktop-database "$(dirname "$_DESKTOP_FILE")"
-  fi
+  install_desktop_entry "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }

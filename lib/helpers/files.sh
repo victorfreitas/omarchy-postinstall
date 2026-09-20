@@ -15,6 +15,21 @@ backup_file() {
   ((${#old[@]} == 0)) || rm -f -- "${old[@]}"
 }
 
+# True when the file exists and holds exactly CONTENT.
+file_matches() {
+  local file="$1" content="$2"
+  [[ -f "$file" && "$(<"$file")" == "$content" ]]
+}
+
+# Writes CONTENT as the whole file. For files that are entirely ours; a file
+# shared with the user or another tool gets a managed block instead.
+write_file() {
+  local file="$1" content="$2"
+  log_info "Writing $file"
+  mkdir -p "$(dirname "$file")"
+  printf '%s\n' "$content" >"$file"
+}
+
 # Marker lines wrapping a managed block, using the file's comment prefix.
 _block_begin() { echo "$2 >>> omarchy-setup:$1 >>>"; }
 _block_end() { echo "$2 <<< omarchy-setup:$1 <<<"; }

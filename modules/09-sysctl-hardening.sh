@@ -44,7 +44,7 @@ fs.protected_regular = 2"
 # The file, not the live values: net.core.bpf_jit_harden is only readable by
 # root, and module_apply loads the file right after writing it.
 module_is_applied() {
-  [[ -f "$_CONF" && "$(<"$_CONF")" == "$_CONTENT" ]]
+  file_matches "$_CONF" "$_CONTENT"
 }
 
 module_apply() {

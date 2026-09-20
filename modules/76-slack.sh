@@ -57,10 +57,6 @@ _slack_installed() {
     [[ -f "$_VERSION_FILE" && "$(<"$_VERSION_FILE")" == "$_VERSION" ]]
 }
 
-_desktop_entry_current() {
-  [[ -f "$_DESKTOP_FILE" && "$(<"$_DESKTOP_FILE")" == "$_DESKTOP_ENTRY" ]]
-}
-
 _install_slack() {
   local tmp
 
@@ -82,19 +78,12 @@ _install_slack() {
 }
 
 module_is_applied() {
-  pkg_installed "${_DEPENDS[@]}" && _slack_installed && _desktop_entry_current
+  pkg_installed "${_DEPENDS[@]}" && _slack_installed &&
+    file_matches "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }
 
 module_apply() {
   pkg_installed "${_DEPENDS[@]}" || pkg_install "${_DEPENDS[@]}"
-
   _slack_installed || _install_slack
-
-  if ! _desktop_entry_current; then
-    log_info "Writing $_DESKTOP_FILE"
-    mkdir -p "$(dirname "$_DESKTOP_FILE")"
-    rm -f "$_DESKTOP_FILE"
-    printf '%s\n' "$_DESKTOP_ENTRY" >"$_DESKTOP_FILE"
-    update-desktop-database "$(dirname "$_DESKTOP_FILE")"
-  fi
+  install_desktop_entry "$_DESKTOP_FILE" "$_DESKTOP_ENTRY"
 }
